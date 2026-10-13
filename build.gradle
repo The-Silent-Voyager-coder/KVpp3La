@@ -1,0 +1,98 @@
+// Done by https://github.com/anomalyco/opencode for https://github.com/anomalyco/opencode
+plugins {
+    id 'fabric-loom' version "${loom_version}"
+    id 'java'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+java {
+    toolchain {
+        // TEMP-SMOKE-TEST: 21 matches the daemon JDK on this machine.
+        // Revert to 25 with the 26.x retarget (needs JDK 25 installed).
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+    withSourcesJar()
+}
+
+loom {
+    // Official Mojang mappings for 26.x — no Yarn.
+    // Parchment optional: add "parchment:com.parchmentmc.data:parchment-...:..." to dependencies if desired.
+    splitEnvironmentSourceSets()
+
+    mods {
+        'multifeature-mod' {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    // Official Mojang mappings (Mojang names in source). Do NOT switch to Yarn.
+    mappings loom.officialMojangMappings()
+
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    // TEMP-SMOKE-TEST: full API (granular modules use hash versions now).
+    // Revert to the 3 minimal modules on the 26.x retarget.
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    // Client commands need command-api-v2 explicitly (runtime dep). Pinned to
+    // the hash version bundled with the smoke-test API above; re-verify the
+    // module version on the 26.x retarget (minimal-modules set then gains this
+    // fourth entry).
+    modImplementation "net.fabricmc.fabric-api:fabric-command-api-v2:2.4.7+6b42a6003e"
+    // Health overlay hook lives in fabric-rendering-v1 (HudRenderCallback).
+    // Hash-pinned to the smoke-test API above; re-verify on the 26.x retarget.
+    modImplementation "net.fabricmc.fabric-api:fabric-rendering-v1:16.2.10+0290ad933e"
+    // Star-chat mining commands hook ALLOW_CHAT in fabric-message-api-v1.
+    // Hash-pinned likewise; re-verify on the 26.x retarget.
+    modImplementation "net.fabricmc.fabric-api:fabric-message-api-v1:6.1.12+4ebb5c083e"
+
+    // Gson comes via Minecraft; no extra libs.
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'minecraft_version', project.minecraft_version
+    inputs.property 'loader_version', project.loader_version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version,
+               'minecraft_version': project.minecraft_version,
+               'loader_version': project.loader_version
+    }
+}
+
+// Loom split env keeps mod metadata in src/client/resources — the main
+// processResources above never touches it, so placeholders stayed literal
+// (${version} reached the loader verbatim). Expand client resources too.
+processClientResources {
+    inputs.property 'version', project.version
+    inputs.property 'minecraft_version', project.minecraft_version
+    inputs.property 'loader_version', project.loader_version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version,
+               'minecraft_version': project.minecraft_version,
+               'loader_version': project.loader_version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21 // TEMP-SMOKE-TEST: revert to 25 with 26.x (needs JDK 25).
+    it.options.encoding = 'UTF-8'
+}
+
+jar {
+    from('LICENSE') {
+        rename { 'LICENSE_' + project.archives_base_name }
+    }
+}
+
+// ./gradlew build  — output in build/libs/
+// For 26.3: edit gradle.properties (minecraft_version=26.3, loader 0.19.5+, fabric 0.160.5+) then rebuild.

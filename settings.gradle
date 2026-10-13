@@ -1,0 +1,15 @@
+// Done by https://github.com/anomalyco/opencode for https://github.com/anomalyco/opencode
+pluginManagement {
+    repositories {
+        maven { url = 'https://maven.fabricmc.net/' }
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+        maven { url = 'https://maven.fabricmc.net/' }
+    }
+}
+rootProject.name = 'multifeature-mod'

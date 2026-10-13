@@ -1,0 +1,45 @@
+# Done by https://github.com/anomalyco/opencode for https://github.com/anomalyco/opencode
+# Gradle
+.gradle/
+build/
+/out/
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# Loom / Minecraft run dir
+run/
+.mixin.out/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+*.err
+logs/
+
+# Dev notes (not for public repo)
+deepseek_txt_*.txt
+buildout*.log
+runclient*.log
+runclient*.err
+
+# Environment
+.env
+.env.*
+
+# Signing / distribution (if added later)
+keystore.jks
+*.jks
+
+config/multifeature.json
